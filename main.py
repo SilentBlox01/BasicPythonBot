@@ -6,11 +6,14 @@ import datetime
 import requests
 from jikanpy import Jikan
 from jikanpy.exceptions import APIException
+from discord.ext.commands import Bot
 import qrcode
 import jikanpy
 import aiohttp
 import random
 import os
+import asyncio
+import math
 
 afk_users = {}
 jikan = jikanpy.Jikan()
@@ -62,6 +65,65 @@ async def mute(ctx, member:discord.Member, timelimit="604800"):
 @commands.has_permissions(manage_messages=True)
 async def say(ctx, *, message):
     await ctx.send(message)
+
+@bot.command()
+async def serverinfo(ctx):
+    """Muestra la información del servidor"""
+    embed = discord.Embed(title="Información del servidor", color=0x9208ea)
+    embed.add_field(name="Nombre del servidor", value=ctx.guild.name, inline=True)
+
+    roles = ", ".join([role.name for role in ctx.guild.roles])
+    embed.add_field(name="Roles", value=roles, inline=True)
+
+    embed.add_field(name="Miembros", value=len(ctx.guild.members))
+    embed.add_field(name="Canales", value=len(ctx.guild.channels))
+    embed.add_field(name="Pedido por", value="{}".format(ctx.author.mention))
+    embed.set_footer(text="Creado con amor")
+
+    await ctx.send(embed=embed)
+
+@bot.command()
+async def userinfo(ctx, member: discord.Member = None):
+    member = member or ctx.author
+    if member == ctx.bot.user:
+        return await ctx.send("¿Qué quieres saber, si soy yo misma :D")
+    embed = discord.Embed(title=f"{member.name}'s Info", color=0x00f549)
+    embed.set_thumbnail(url=member.avatar.url)
+    embed.add_field(name="Nombre de usuario:", value=member.name, inline=False)
+    embed.add_field(name="Apodo:", value=member.nick or "Ninguno", inline=False)
+    embed.add_field(name="ID de usuario:", value=member.id, inline=False)
+    embed.add_field(name="Fecha de creación de la cuenta:", value=member.created_at.strftime("%m/%d/%Y %H:%M:%S"), inline=False)
+    embed.add_field(name="Fecha de ingreso al servidor:", value=member.joined_at.strftime("%m/%d/%Y %H:%M:%S"), inline=False)
+    roles = ", ".join([role.mention for role in member.roles if not role.is_default()])
+    embed.add_field(name="Roles:", value=roles or "Ninguno", inline=False)
+    embed.add_field(name="Estado:", value=str(member.status).title(), inline=False)
+    activity = f"{str(member.activity.type).split('.')[-1].title()} {member.activity.name}" if member.activity else "Ninguna"
+    embed.add_field(name="Actividad:", value=activity, inline=False)
+    await ctx.send(embed=embed)
+
+@bot.command()
+async def morse(ctx, *, message):
+    """Convierte un texto a código Morse"""
+    morse_code = {
+        'a': '.-', 'b': '-...', 'c': '-.-.', 'd': '-..', 'e': '.', 'f': '..-.',
+        'g': '--.', 'h': '....', 'i': '..', 'j': '.---', 'k': '-.-', 'l': '.-..',
+        'm': '--', 'n': '-.', 'o': '---', 'p': '.--.', 'q': '--.-', 'r': '.-.',
+        's': '...', 't': '-', 'u': '..-', 'v': '...-', 'w': '.--', 'x': '-..-',
+        'y': '-.--', 'z': '--..', '0': '-----', '1': '.----', '2': '..---',
+        '3': '...--', '4': '....-', '5': '.....', '6': '-....', '7': '--...',
+        '8': '---..', '9': '----.', '.': '.-.-.-', ',': '--..--', '?': '..--..',
+        '!': '-.-.--', '-': '-....-', '/': '-..-.', '@': '.--.-.', '(': '-.--.',
+        ')': '-.--.-', ' ': '/'
+    }
+
+    # Convertimos el mensaje a minúsculas
+    message = message.lower()
+
+    # Creamos una lista con el código Morse correspondiente a cada caracter del mensaje
+    morse_message = [morse_code.get(char, char) for char in message]
+
+    # Unimos los caracteres con un espacio y enviamos el mensaje en código Morse
+    await ctx.send(' '.join(morse_message))
 
 @bot.command()
 async def bola8(ctx, *, question):
@@ -168,7 +230,6 @@ async def unban(ctx, *, member):
 async def ping(ctx):
     await ctx.send(f"Pong! Mi latencia es {round(bot.latency * 1000)}ms.")
 
-
 @bot.command()
 async def avatar(ctx, member: discord.Member = None):
     member = ctx.author if not member else member
@@ -244,7 +305,7 @@ async def creador(ctx):
     await ctx.send(embed=embed)
 
 @bot.command()
-async def about(ctx):
+async def sobremi(ctx):
     embed = discord.Embed(title="Acerca de", color=discord.Color.blue())
     embed.set_thumbnail(url=bot.user.avatar.url)
     embed.add_field(name="Nombre del bot", value=bot.user.name, inline=True)
@@ -335,6 +396,22 @@ async def ship(ctx, user1: discord.Member, user2: discord.Member):
     await ctx.send(ship_message)
 
 @bot.command()
+async def calcular(ctx, *, expresion):
+    try:
+        # Evalúa la expresión matemática ingresada por el usuario
+        resultado = eval(expresion)
+        
+        # Formatea el resultado con dos decimales si es un número de punto flotante
+        if isinstance(resultado, float):
+            resultado = round(resultado, 2)
+        
+        # Envía el resultado de vuelta al usuario
+        await ctx.send(f"El resultado es: {resultado}")
+    except Exception as e:
+        # Si hay un error, devuelve un mensaje de error al usuario
+        await ctx.send(f"Ocurrió un error: {e}")
+	
+@bot.command()
 async def ayuda(ctx):
     embed = discord.Embed(title="Comandos del bot", description="Aquí están todos los comandos disponibles en el bot:", color=discord.Color.blue())
 
@@ -363,15 +440,18 @@ async def ayuda(ctx):
     # División de comandos de utilidad
     util_cmds = ""
     util_cmds += "**m/ping**: Muestra la latencia del bot\n"
-    util_cmds += "**m/avatar**: Muestra el avatar de un usuario\n"
+    util_cmds += "**m/userinfo [usuario]**: Muestra información sobre un usuario\n"
     util_cmds += "**m/afk [razón]**: Establece un estado de ausencia y muestra una respuesta personalizada cuando te mencionen\n"
     util_cmds += "**m/unafk**: Quita el estado de ausencia\n"
     util_cmds += "**m/qr [texto]**: Genera un código QR a partir de un texto\n"
+    util_cmds += "**m/morse [texto]**: Devuelve el código morse de un texto escrito\n"
+    util_cmds += "**m/serverinfo**: Muestra información del servidor\n"
+    util_cmds += "**m/calcular [expresión matemática]**: Calcula el resultado de una expresión matemática\n"
     embed.add_field(name="Comandos de Utilidad", value=util_cmds, inline=False)
 
     # Comandos Misceláneos
     misc_cmds = ""
-    misc_cmds += "**m/about**: Muestra información sobre el bot\n"
+    misc_cmds += "**m/sobremi**: Muestra información sobre el bot\n"
     misc_cmds += "**m/invite**: Genera un enlace para invitar al bot a tu servidor\n"
     misc_cmds += "**m/creador**: Muestra información sobre el creador y el bot\n"
     embed.add_field(name="Comandos Misceláneos", value=misc_cmds, inline=False)
@@ -384,4 +464,4 @@ async def ayuda(ctx):
     await ctx.send(embed=embed)
 	
 keep_alive()
-bot.run("ODcyODY2Mjc2MjMyNTQwMTkw.G82B10.a5sXNtGc203IgGRWmmDj52rvLgq7dqMtswMiJo")
+bot.run("ODcyODY2Mjc2MjMyNTQwMTkw.GWBf7D.491GSIIgStFUditdvaqODE-4X4YhcUDKvdPjNY")
