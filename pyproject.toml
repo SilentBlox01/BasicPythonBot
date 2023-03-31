@@ -15,12 +15,12 @@ datetime3 = "3.8.0"
 discord = "^2.2.2"
 aiohttp = "3.8.4"
 openai = "^0.27.2"
-discord-py-slash-command = "4.2.1"
 nltk = "3.8.1"
 jikanpy = "^4.3.2"
 qrcode = "^7.4.2"
 lyricsgenius = "^3.0.1"
 sympy = "^1.11.1"
+discord-py-slash-command = "4.2.1"
 
 [tool.poetry.dev-dependencies]
 debugpy = "^1.6.2"

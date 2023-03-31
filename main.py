@@ -24,16 +24,11 @@ GIPHY_API_KEY = os.getenv('gvtSvH8OHsBP4CP91WAtQgsdemioBnqe')
 blacklist = ["1234567890", "0987654321"]
 blacklisted_users = [123456789012345678, 987654321098765432]
 bot = commands.Bot(command_prefix="m/", intents=discord.Intents.all())
-kiss_count = {}
 
 @bot.event
 async def on_ready():
     print("Miku is online")
-
-@bot.event
-async def on_ready():
-    await bot.change_presence(activity=discord.Streaming(name="m/ayuda", url="https://www.youtube.com/channel/UCCawTLnpgbc7_ltyGScoQpw"))
-
+	
 @bot.command()
 async def hello(ctx):
     username = ctx.message.author.mention
@@ -541,6 +536,10 @@ async def neko(ctx):
 
 @bot.command()
 async def animegirlnsfw(ctx):
+    if not ctx.channel.nsfw:
+        await ctx.send("Lo siento, este comando solo puede ser usado en canales con restricción de edad.")
+        return
+
     response = requests.get("https://api.waifu.pics/nsfw/waifu")
     data = response.json()
     img_url = data['url']
@@ -550,6 +549,10 @@ async def animegirlnsfw(ctx):
 
 @bot.command()
 async def nekonsfw(ctx):
+    if not ctx.channel.is_nsfw():
+        await ctx.send("Este comando solo se puede usar en canales con restricción de edad.")
+        return
+
     response = requests.get("https://api.waifu.pics/nsfw/neko")
     data = response.json()
     img_url = data['url']
@@ -669,4 +672,4 @@ async def ayuda(ctx):
     await ctx.send(embed=embed)
 	
 keep_alive()
-bot.run("ODcyODY2Mjc2MjMyNTQwMTkw.G5lSSw.J9skFPBtBFo2MiSS9Lm1kSfMZ2sec-CFdORRkI")
+bot.run("")

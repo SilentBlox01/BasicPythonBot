@@ -22,6 +22,7 @@ debugpy @ https://files.pythonhosted.org/packages/92/d5/b0f9b31b5fc902aa1611d016
 discord @ https://files.pythonhosted.org/packages/15/a0/6f07dca97d1f2a1276bac37877b93185a47f88a6bfd2479d986003f3fcc5/discord-2.2.2-py3-none-any.whl#sha256=1c6af76ed703d07159149e5406d2857419970925454867e145a228cc0996045e
 discord-py-slash-command @ https://files.pythonhosted.org/packages/31/6c/5fac89bfee4e34e9bb797800145359b518afd0751d83aeaf6c1bb627b71b/discord_py_slash_command-4.2.1-py3-none-any.whl#sha256=7809a99345b4699cf039b2255a49ef3dec7940c335061ca5e13f0a91b0a76194
 discord.py @ https://files.pythonhosted.org/packages/92/e5/291c0312640b568fbe1d276e41d94f377d21255117b47a8da39c339790fb/discord.py-2.2.2-py3-none-any.whl#sha256=38fc52a784727b8e5e5749267089400035b187a009028eddfabeb182abcc6d52
+discord-py-slash-command==1.1.1
 distlib==0.3.6
 filelock==3.9.0
 Flask @ https://files.pythonhosted.org/packages/0f/43/15f4f9ab225b0b25352412e8daa3d0e3d135fcf5e127070c74c3632c8b4c/Flask-2.2.2-py3-none-any.whl#sha256=b9c46cc36662a7949f34b52d8ec7bb59c0d74ba08ba6cb9ce9adc1d8676d9526
